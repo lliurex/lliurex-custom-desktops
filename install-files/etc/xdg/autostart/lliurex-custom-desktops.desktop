@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Lliurex Custom Desktops
+Comment=Copies list of desktops to user Desktop directory
+Exec=lliurex-custom-desktops
+StartupNotify=true
+Terminal=false
+Type=Application

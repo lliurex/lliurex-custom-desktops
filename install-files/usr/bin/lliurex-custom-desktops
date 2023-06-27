@@ -1,0 +1,136 @@
+#!/usr/bin/python3
+
+import os
+import stat
+import shutil
+import sys
+from pathlib import Path
+
+class LlxCustomDesktops:
+	
+	DEBUG=True
+	
+	CONFIG_DIR=os.path.expanduser("~/.config/lliurex-custom-desktops/")
+	CONFIG_FILE=CONFIG_DIR + "version"
+	
+
+	# The idea is to append to Desktops list a list of desktops to copy with each revision
+	# Each revision will mean version will have to be modified to VERSION+1
+	# Original release was VERSION=1
+
+	VERSION=1	
+	DESKTOPS=[]
+	
+	# VERSION 1
+	DESKTOPS.append([
+	"/usr/share/applications/onboard.desktop",
+	"/usr/share/applications/openboard.desktop",
+	"/usr/share/applications/net.lliurex.simplayer.desktop"
+	])
+	
+	#Example of  adding VERSION X
+	#DESKTOPS.append([
+	#"/usr/share/applications/firefox.desktop"
+	#])
+	
+	def __init__(self):
+	
+		self.dprint("INIT")
+		version=self.get_deployed_version()
+		self.dprint("Current deployed version '%s'"%version)
+		if version >= LlxCustomDesktops.VERSION:
+			self.dprint("Nothing to do")
+		else:
+			self.deploy_version(version)
+		
+	#def init
+	
+	def dprint(self,data):
+		
+		if LlxCustomDesktops.DEBUG:
+			print("[LCD] %s"%str(data))
+		
+	#def dprint
+	
+	def get_deployed_version(self):
+		
+		if not os.path.exists(LlxCustomDesktops.CONFIG_DIR):
+			return 0
+		if not os.path.exists(LlxCustomDesktops.CONFIG_FILE):
+			return 0
+		
+		try:
+			with open(LlxCustomDesktops.CONFIG_FILE) as f:
+				version=int(f.readline().strip())
+				
+			return version
+		except Exception as e:
+			self.dprint("Error reading conf file: %s"%e)
+			return 0
+		
+		
+	#def get_deployed_version
+	
+	def deploy_version(self,version):
+		
+		self.dprint("Deploy version '%s' and beyond:"%(version+1))
+		
+		desktop_dir=self.guess_desktop_dir()
+		
+		for count,desktop_list in  enumerate(LlxCustomDesktops.DESKTOPS[version:]):
+			self.dprint("\tVersion %s:"%(count+version+1))
+			for desktop_file in desktop_list:
+				self.dprint("\t\tCopying %s ..."%desktop_file)
+				self.copy(desktop_file,desktop_dir)
+				
+		self.write_config(count+version+1)
+		
+	#def deploy_version
+	
+	def guess_desktop_dir(self):
+		
+		desktop=""
+		with open(os.path.expanduser("~/.config/user-dirs.dirs")) as f:
+			for line in f.readlines():
+				if "XDG_DESKTOP_DIR=" in line:
+					desktop=line.split("XDG_DESKTOP_DIR=")[1].replace("$HOME","~").replace('"','').strip("\n")
+					
+		
+		desktop_dir=os.path.expanduser(desktop)
+		
+		return desktop_dir
+	
+	def copy(self,file_path,dest):
+
+		if os.path.exists(file_path):
+			try:
+				shutil.copy(file_path,dest)
+				f=file_path.split("/")[-1]
+				dest_file=dest+"/"+f
+				st = os.stat(dest_file)
+				os.chmod(dest_file, st.st_mode | stat.S_IEXEC)
+				return True
+			except Exception as e:
+				self.dprint(e)
+				return False
+		return False
+		
+	#def copy
+	
+	def write_config(self,version):
+		
+		if not os.path.exists(LlxCustomDesktops.CONFIG_DIR):
+			os.makedirs(LlxCustomDesktops.CONFIG_DIR)
+		
+		with open(LlxCustomDesktops.CONFIG_FILE,"w") as f:
+			f.write(str(version))
+		
+		self.dprint("Config version '%s' written"%version)
+		
+	#def write_config
+	
+#class LlxCustomDesktops
+
+if __name__=="__main__":
+	
+	lcd=LlxCustomDesktops()
