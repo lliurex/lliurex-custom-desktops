@@ -1,0 +1,16 @@
+Source: lliurex-custom-desktops
+Section: python
+Priority: standard
+Maintainer: Equipo LliureX <lliurex@gva.es> 
+Build-Depends: debhelper (>=10)
+Standards-Version: 4.1.2
+Homepage: http://lliurex.net
+Vcs-Browser: https://github.com/lliurex/n4d
+
+Package: lliurex-custom-desktops
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python3
+Description: LliureX custom Desktops service
+  This package copies a list of desktops to the user Desktop directory.
+
+
